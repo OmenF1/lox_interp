@@ -11,7 +11,7 @@ type Scanner struct {
 	line    int
 }
 
-func (s Scanner) ScanTokens() {
+func (s *Scanner) ScanTokens() {
 
 	for {
 		if s.isAtEnd() {
@@ -22,61 +22,79 @@ func (s Scanner) ScanTokens() {
 	}
 }
 
-func (s Scanner) isAtEnd() bool {
+func (s *Scanner) isAtEnd() bool {
 	return s.current >= len(s.Source)
 }
 
-func (s Scanner) scanToken() {
+func (s *Scanner) scanToken() {
 	c := s.advance()
 	switch c {
 	case "(":
 		s.addToken(tokens.LeftParen)
-		break
 
 	case ")":
 		s.addToken(tokens.RightParen)
-		break
+
 	case "{":
 		s.addToken(tokens.LeftBrace)
-		break
+
 	case "}":
 		s.addToken(tokens.RightBrace)
-		break
 
 	case ",":
 		s.addToken(tokens.Comma)
-		break
+
 	case ".":
 		s.addToken(tokens.Dot)
-		break
 
 	case "-":
 		s.addToken(tokens.Minus)
-		break
+
 	case "+":
 		s.addToken(tokens.Plus)
-		break
+
 	case ";":
 		s.addToken(tokens.Semicolon)
-		break
+
 	case "*":
 		s.addToken(tokens.Star)
-		break
+
+	case "!":
+		//	So go doesn't have ternary operations?
+		if s.match("=") {
+			s.addToken(tokens.BangEqual)
+		} else {
+			s.addToken(tokens.Bang)
+		}
+
 	default:
 		//TODO: Throw Error here.
-		break
+
 	}
 }
 
-func (s Scanner) advance() string {
-	return string([]rune(s.Source)[s.current+1])
+func (s *Scanner) match(expected string) bool {
+	if s.isAtEnd() {
+		return false
+	}
+
+	if string(s.Source[s.current]) != expected {
+		return false
+	}
+	s.current++
+	return true
 }
 
-func (s Scanner) addToken(tokenType int) {
+func (s *Scanner) advance() string {
+	return string(s.Source[s.current+1])
+	// return string([]rune(s.Source)[s.current++])
+}
+
+func (s *Scanner) addToken(tokenType int) {
 	s.addTokenWithLiteral(tokenType, "")
 }
 
-func (s Scanner) addTokenWithLiteral(tokenType int, literal string) {
+func (s *Scanner) addTokenWithLiteral(tokenType int, literal string) {
 	text := string(s.Source[s.start:s.current])
 	_token := Token{
 		tokenType: tokenType,
